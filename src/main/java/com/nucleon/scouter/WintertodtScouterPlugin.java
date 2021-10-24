@@ -27,6 +27,9 @@ package com.nucleon.scouter;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
+
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -57,6 +60,9 @@ import java.util.regex.Pattern;
 public class WintertodtScouterPlugin extends Plugin
 {
 	public ArrayList<WintertodtBossData> localBossDataArrayList = new ArrayList<WintertodtBossData>();
+
+	@Getter
+	@Setter
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<WintertodtBossData>();
 
 	private static final int WINTERTODT_REGION = 6462;
@@ -69,6 +75,20 @@ public class WintertodtScouterPlugin extends Plugin
 
 	static final String CONFIG_GROUP_KEY = "scouter";
 
+	@Getter
+	String wintertodtGetUplink;
+
+	@Getter
+	String wintertodtGetDownlink;
+
+	@Getter
+	@Setter
+	private boolean postError = false;
+
+	@Getter
+	@Setter
+	private boolean getError = false;
+
 	@Inject
 	Client client;
 
@@ -79,6 +99,16 @@ public class WintertodtScouterPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		log.info("Wintertodt-Scouter started!");
+
+		// Set up config variables
+		wintertodtGetUplink = config.wintertodtGetUplinkConfig();
+		wintertodtGetDownlink = config.wintertodtGetDownlinkConfig();
+
+		// Add the overlay to the OverlayManager
+		//.add(overlayPanel);
+
+		// Set up the sidebar panel
+		//loadPluginPanel();
 	}
 
 	@Override
@@ -112,7 +142,7 @@ public class WintertodtScouterPlugin extends Plugin
 			asynchronous = true
 	)
 
-	// Encapsulate this later
+	// Encapsulate this in another version
 
 	public void captureBossHealth() {
 		// The Wintertodt Energy Bar packed ID
