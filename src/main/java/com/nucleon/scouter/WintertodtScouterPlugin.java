@@ -31,17 +31,18 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.Player;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.task.Schedule;
-
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,11 +56,14 @@ import java.util.regex.Pattern;
 
 public class WintertodtScouterPlugin extends Plugin
 {
+	public ArrayList<WintertodtBossData> localBossDataArrayList = new ArrayList<WintertodtBossData>();
+	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<WintertodtBossData>();
+
 	private static final int WINTERTODT_REGION = 6462;
-	private final int SECONDS_BETWEEN_UPLINK = 10;
-	private final int SECONDS_BETWEEN_DOWNLINK = 10;
+	private final int SECONDS_BETWEEN_UPLINK = 5;
+	private final int SECONDS_BETWEEN_DOWNLINK = 5;
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
-	private final int SECONDS_BETWEEN_POLL_HEALTH = 5;
+	private final int SECONDS_BETWEEN_POLL_HEALTH = 1;
 	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952277;
 
 	static final String CONFIG_GROUP_KEY = "scouter";
@@ -87,7 +91,7 @@ public class WintertodtScouterPlugin extends Plugin
 	{
 		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
 		{
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Wintertodt-Scouter says " + "version 1.0d", null);
+			//client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Wintertodt-Scouter says " + "version 1.0", null);
 		}
 	}
 
@@ -107,14 +111,55 @@ public class WintertodtScouterPlugin extends Plugin
 			asynchronous = true
 	)
 
-	public void getBossHealth() {
-		Widget wintertodtBossStatus = client.getWidget(WINTERTODT_HEALTH_PACKED_ID);
-		if (isInWintertodtRegion() && wintertodtBossStatus != null) {
-			Pattern p = Pattern.compile("\\d+");
-			Matcher m = p.matcher(wintertodtBossStatus.getText().toString());
-			if (m.find()) {
-				System.out.println("Health: " + m.group(0) + " | World: " + client.getWorld());
+	// Encapsulate this later
+
+	public void captureBossHealth() {
+		// The Wintertodt Energy Bar packed ID
+		Widget wintertodtEnergyWidget = client.getWidget(WINTERTODT_HEALTH_PACKED_ID);
+
+		// Check if the player is in the Wintertodt boss fight region, also check if the widget is loaded
+		if (isInWintertodtRegion() && wintertodtEnergyWidget != null) {
+
+			// Pull just the numbers from the Widget's text property ("Wintertodt Energy: 100%")
+			Pattern regex = Pattern.compile("\\d+");
+			Matcher bossEnergy = regex.matcher(wintertodtEnergyWidget.getText().toString());
+
+			// Isolate the numbers
+			if (bossEnergy.find()) {
+
+				// add it to the arraylist for further network processing
+				int energy = Integer.parseInt(bossEnergy.group(0));
+				int world = client.getWorld();
+
+				WintertodtBossData current = new WintertodtBossData(energy, world, Instant.now().getEpochSecond(), false);
+
+				//check if the energy data is the same as the last upload; if so, skip this data.
+				if (localBossDataArrayList.size() > 1) {
+
+					WintertodtBossData previous = localBossDataArrayList.get(0);
+
+					//if (previous.isUploaded()) {
+						if (previous.getWorld() == current.getWorld()) {
+							if (previous.getHealth() == current.getHealth()) {
+								System.out.println("- Skipped Data, it's the same.");
+								return;
+							}
+						}
+					//}
+				}
+				localBossDataArrayList.add(current);
+				localBossDataArrayList.sort(new WintertodtBossDataComparator());
+				Collections.reverse(localBossDataArrayList);
 			}
+		}
+		if (localBossDataArrayList.size() > 0)
+			System.out.println(localBossDataArrayList.get(0).convertToDate().toString() + ":" + localBossDataArrayList.get(0).getHealth());
+	}
+
+	public static class WintertodtBossDataComparator implements Comparator<WintertodtBossData> {
+		@Override
+		public int compare(WintertodtBossData o1, WintertodtBossData o2) {
+			return o1.convertToDate().compareTo(o2.convertToDate());
 		}
 	}
 
