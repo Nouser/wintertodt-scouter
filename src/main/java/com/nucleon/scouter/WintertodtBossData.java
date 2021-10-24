@@ -48,15 +48,18 @@ public class WintertodtBossData
     @Getter
     private long time;
 
+    @Getter
+    private int timer;
 
     private static final String NOW_STRING = "Now";
 
-    public WintertodtBossData(int health, int world, long time, boolean uploaded)
+    public WintertodtBossData(int health, int world, long time, boolean uploaded, int timer)
     {
         this.health = health;
         this.world = world;
         this.uploaded = uploaded;
         this.time = time;
+        this.timer = timer;
     }
 
     public Date convertToDate() {

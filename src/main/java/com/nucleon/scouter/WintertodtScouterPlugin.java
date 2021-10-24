@@ -65,6 +65,7 @@ public class WintertodtScouterPlugin extends Plugin
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
 	private final int SECONDS_BETWEEN_POLL_HEALTH = 1;
 	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952277;
+	public static final int WINTERTODT_GAME_TIMER_ID = 25952259;
 
 	static final String CONFIG_GROUP_KEY = "scouter";
 
@@ -127,11 +128,17 @@ public class WintertodtScouterPlugin extends Plugin
 			// Isolate the numbers
 			if (bossEnergy.find()) {
 
-				// add it to the arraylist for further network processing
+				// get ready to add it to the arraylist for further network processing
 				int energy = Integer.parseInt(bossEnergy.group(0));
 				int world = client.getWorld();
+				long unixTime = Instant.now().getEpochSecond();
 
-				WintertodtBossData current = new WintertodtBossData(energy, world, Instant.now().getEpochSecond(), false);
+				if (energy == 0) {
+					captureResetTimer();
+					return;
+				}
+
+				WintertodtBossData current = new WintertodtBossData(energy, world, unixTime, false, -1);
 
 				//check if the energy data is the same as the last upload; if so, skip this data.
 				if (localBossDataArrayList.size() > 1) {
@@ -147,15 +154,70 @@ public class WintertodtScouterPlugin extends Plugin
 						}
 					//}
 				}
+
 				localBossDataArrayList.add(current);
 				localBossDataArrayList.sort(new WintertodtBossDataComparator());
 				Collections.reverse(localBossDataArrayList);
 			}
+			if (localBossDataArrayList.size() > 0)
+				System.out.println(localBossDataArrayList.get(0).getTime() + ": Health: " + localBossDataArrayList.get(0).getHealth());
 		}
-		if (localBossDataArrayList.size() > 0)
-			System.out.println(localBossDataArrayList.get(0).convertToDate().toString() + ":" + localBossDataArrayList.get(0).getHealth());
 	}
 
+	public void captureResetTimer() {
+
+		Widget wintertodtResetWidget = client.getWidget(WINTERTODT_GAME_TIMER_ID);
+
+		// Check if the player is in the Wintertodt boss fight region, also check if the widget is loaded
+		if (isInWintertodtRegion() && wintertodtResetWidget != null) {
+
+			// Pull just the numbers from the Widget's text property ("Wintertodt Energy: 100%")
+			Pattern regex = Pattern.compile("\\d:\\d+");
+			Matcher bossTimer = regex.matcher(wintertodtResetWidget.getText());
+
+			// Isolate the numbers
+			if (bossTimer.find()) {
+
+				// get ready to add it to the arraylist for further network processing
+				String time = bossTimer.group(0);
+				String minute = time.split(":")[0];
+				String second = time.split(":")[1];
+				int seconds;
+				if (minute.equals("1")) {
+					seconds = 60 + Integer.parseInt(second);
+				} else {
+					seconds = Integer.parseInt(second);
+				}
+				int timer = seconds;
+				int world = client.getWorld();
+				long unixTime = Instant.now().getEpochSecond();
+
+				WintertodtBossData current = new WintertodtBossData(-1, world, unixTime, false, timer);
+
+				//check if the energy data is the same as the last upload; if so, skip this data.
+				if (localBossDataArrayList.size() > 1) {
+
+					WintertodtBossData previous = localBossDataArrayList.get(0);
+
+					//if (previous.isUploaded()) {
+					if (previous.getWorld() == current.getWorld()) {
+						if (previous.getTimer() == current.getTimer()) {
+							System.out.println("- Skipped Data, it's the same.");
+							return;
+						}
+					}
+					//}
+				}
+				localBossDataArrayList.add(current);
+				localBossDataArrayList.sort(new WintertodtBossDataComparator());
+				Collections.reverse(localBossDataArrayList);
+			}
+			if (localBossDataArrayList.size() > 0)
+				System.out.println(localBossDataArrayList.get(0).getTime()+ ": Timer: " + localBossDataArrayList.get(0).getTimer());
+		}
+	}
+
+	// Takes the unix timestamp for each entry in the list, converts them to local date and orders them by oldest
 	public static class WintertodtBossDataComparator implements Comparator<WintertodtBossData> {
 		@Override
 		public int compare(WintertodtBossData o1, WintertodtBossData o2) {
