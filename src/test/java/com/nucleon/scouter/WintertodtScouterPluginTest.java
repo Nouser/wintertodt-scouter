@@ -1,4 +1,4 @@
-package com.wintertodt.scouter;
+package com.nucleon.scouter;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
