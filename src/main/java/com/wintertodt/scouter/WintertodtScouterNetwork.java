@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019, Weird Gloop <admin@weirdgloop.org>
  * Copyright (c) 2021, Andrew McAdams
- * Copyright (c) 2021, nucleon
+ * Copyright (c) 2021, wintertodt
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,7 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.nucleon.scouter;
+package com.wintertodt.scouter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -117,7 +117,7 @@ public class WintertodtScouterNetwork
                 @Override
                 public void onFailure(Call call, IOException e)
                 {
-                    log.debug("Error sending shooting star data", e);
+                    log.debug("Error sending wintertodt boss data", e);
                     plugin.setPostError(true);
                 }
 
@@ -126,7 +126,7 @@ public class WintertodtScouterNetwork
                 {
                     if (response.isSuccessful())
                     {
-                        log.debug("Successfully sent shooting star data");
+                        log.debug("Successfully sent wintertodt boss data");
                         plugin.setPostError(false);
                         response.close();
                     }
@@ -158,7 +158,7 @@ public class WintertodtScouterNetwork
                 @Override
                 public void onFailure(Call call, IOException e)
                 {
-                    log.debug("Error retrieving shooting star data", e);
+                    log.debug("Error retrieving wintertodt boss data", e);
                     plugin.setGetError(true);
                 }
 

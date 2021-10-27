@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, nucleon
+ * Copyright (c) 2021, wintertodt
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,31 +23,53 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.nucleon.scouter;
+package com.wintertodt.scouter;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
+import javax.swing.*;
 
+import com.wintertodt.scouter.ui.WintertodtScouterPluginPanelBase;
+import com.wintertodt.scouter.ui.condensed.WintertodtScouterCondensedPluginPanel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.ChatMessage;
+import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.client.callback.ClientThread;
+import net.runelite.client.chat.ChatColorType;
+import net.runelite.client.chat.ChatMessageBuilder;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.WorldService;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.task.Schedule;
+import net.runelite.client.ui.ClientToolbar;
+import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.WorldUtil;
+import net.runelite.http.api.worlds.World;
+import net.runelite.http.api.worlds.WorldResult;
+import net.runelite.http.api.worlds.WorldType;
+
+import java.awt.image.BufferedImage;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
+import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -59,21 +81,25 @@ import java.util.regex.Pattern;
 
 public class WintertodtScouterPlugin extends Plugin
 {
-	public ArrayList<WintertodtBossData> localBossDataArrayList = new ArrayList<WintertodtBossData>();
+	public ArrayList<WintertodtBossData> localBossDataArrayList = new ArrayList<>();
 
 	@Getter
 	@Setter
-	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<WintertodtBossData>();
+	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
 
 	private static final int WINTERTODT_REGION = 6462;
 	private final int SECONDS_BETWEEN_UPLINK = 5;
 	private final int SECONDS_BETWEEN_DOWNLINK = 5;
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
+	private boolean canRefresh;
 	private final int SECONDS_BETWEEN_POLL_HEALTH = 1;
 	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952277;
 	public static final int WINTERTODT_GAME_TIMER_ID = 25952259;
 
 	static final String CONFIG_GROUP_KEY = "scouter";
+
+	@Inject
+	private ChatMessageManager chatMessageManager;
 
 	@Getter
 	String wintertodtGetUplink;
@@ -93,36 +119,76 @@ public class WintertodtScouterPlugin extends Plugin
 	Client client;
 
 	@Inject
+	private WintertodtScouterNetwork manager;
+
+	@Inject
+	@Getter
 	private WintertodtScouterConfig config;
+
+	@Inject
+	private WintertodtScouterOverlayPanel overlayPanel;
+
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private ClientToolbar clientToolbar;
+
+	@Inject
+	private ClientThread clientThread;
+
+	@Inject
+	@Getter
+	private WorldService worldService;
+
+	private WintertodtScouterPluginPanelBase wintertodtScouterPanel;
+	private NavigationButton navButton = null;
+	private final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/wintertodt-scouter-icon.png");
 
 	@Override
 	protected void startUp() throws Exception
 	{
 		log.info("Wintertodt-Scouter started!");
-
+		canRefresh = true;
 		// Set up config variables
 		wintertodtGetUplink = config.wintertodtGetUplinkConfig();
 		wintertodtGetDownlink = config.wintertodtGetDownlinkConfig();
 
 		// Add the overlay to the OverlayManager
-		//.add(overlayPanel);
+		overlayManager.add(overlayPanel);
 
 		// Set up the sidebar panel
-		//loadPluginPanel();
+		loadPluginPanel();
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
-		log.info("Wintertodt-Scouter stopped!");
+		// Remove the overlay from the OverlayManager
+		overlayManager.remove(overlayPanel);
+
+		// Remove sidebar panel button
+		clientToolbar.removeNavigation(navButton);
 	}
 
 	@Subscribe
-	public void onGameStateChanged(GameStateChanged gameStateChanged)
+	public void onConfigChanged(ConfigChanged event)
 	{
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
+		if (!event.getGroup().equals(CONFIG_GROUP_KEY))
+			return;
+		switch (event.getKey())
 		{
-			//client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Wintertodt-Scouter says " + "version 1.0", null);
+			case WintertodtScouterConfig.NETWORK_UPLINK:
+				wintertodtGetUplink = config.wintertodtGetUplinkConfig();
+				manager.makePostRequest(new ArrayList<Object>());
+				break;
+			case WintertodtScouterConfig.NETWORK_DOWNLINK:
+				wintertodtGetDownlink = config.wintertodtGetDownlinkConfig();
+				manager.makeGetRequest();
+				break;
+			default:
+				updatePanelList();
+				break;
 		}
 	}
 
@@ -136,10 +202,18 @@ public class WintertodtScouterPlugin extends Plugin
 		return false;
 	}
 
+	public void updatePanelList()
+	{
+		log.debug("Update panel list");
+		//SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList.stream().filter(this::isAllowedWorld).collect(Collectors.toList())));
+		SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(localBossDataArrayList));
+		//SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList.stream().filter(this::isAllowedWorld).collect(Collectors.toList())));
+	}
+
 	@Schedule(
 			period = SECONDS_BETWEEN_POLL_HEALTH,
 			unit = ChronoUnit.SECONDS,
-			asynchronous = true
+			asynchronous = false
 	)
 
 	// Encapsulate this in another version
@@ -191,6 +265,7 @@ public class WintertodtScouterPlugin extends Plugin
 			}
 			if (localBossDataArrayList.size() > 0)
 				System.out.println(localBossDataArrayList.get(0).getTime() + ": Health: " + localBossDataArrayList.get(0).getHealth());
+				updatePanelList();
 		}
 	}
 
@@ -255,9 +330,203 @@ public class WintertodtScouterPlugin extends Plugin
 		}
 	}
 
+	private void loadPluginPanel()
+	{
+		if (navButton != null)
+		{
+			clientToolbar.removeNavigation(navButton);
+		}
+
+		Class<? extends WintertodtScouterPluginPanelBase> panelClass;
+
+		panelClass = WintertodtScouterCondensedPluginPanel.class;
+
+		try
+		{
+			wintertodtScouterPanel = panelClass.getDeclaredConstructor(this.getClass()).newInstance(this);
+		}
+		catch (Exception e)
+		{
+			log.error("Error loading panel class", e);
+			return;
+		}
+
+		navButton = NavigationButton.builder().tooltip("Wintertodt Scouter").icon(icon).priority(7).panel(wintertodtScouterPanel).build();
+		clientToolbar.addNavigation(navButton);
+	}
+
 	@Provides
 	WintertodtScouterConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(WintertodtScouterConfig.class);
+	}
+	private boolean isAllowedWorld(WintertodtBossData bossData) {
+		// Protect against non-existent world ids
+		WorldResult worldResult = worldService.getWorlds();
+		if (worldResult == null) {
+			return false;
+		}
+		World world = worldResult.findWorld(bossData.getWorld());
+		if (world == null) {
+			return false;
+		}
+
+
+		// Disallow various landing sites (depending on config)
+		return true;
+	}
+
+
+	public int getCurrentWorld()
+	{
+		return client.getWorld();
+	}
+
+	private static final int DISPLAY_SWITCHER_MAX_ATTEMPTS = 3;
+	private net.runelite.api.World quickHopTargetWorld;
+	private int displaySwitcherAttempts = 0;
+
+	public void hopTo(World world)
+	{
+		hopTo(world.getId());
+	}
+
+	public void hopTo(int worldId)
+	{
+		clientThread.invoke(() -> hop(worldId));
+	}
+
+	private void hop(int worldId)
+	{
+		assert client.isClientThread();
+
+		if (!config.isWorldHopperEnabled())
+		{
+			return;
+		}
+
+		WorldResult worldResult = worldService.getWorlds();
+		if (worldResult == null)
+		{
+			return;
+		}
+		// Don't try to hop if the world doesn't exist
+		World world = worldResult.findWorld(worldId);
+		if (world == null)
+		{
+			return;
+		}
+
+		final net.runelite.api.World rsWorld = client.createWorld();
+		rsWorld.setActivity(world.getActivity());
+		rsWorld.setAddress(world.getAddress());
+		rsWorld.setId(world.getId());
+		rsWorld.setPlayerCount(world.getPlayers());
+		rsWorld.setLocation(world.getLocation());
+		rsWorld.setTypes(WorldUtil.toWorldTypes(world.getTypes()));
+
+		String chatMessage = new ChatMessageBuilder()
+				.append(ChatColorType.NORMAL)
+				.append("Quick-hopping to World ")
+				.append(ChatColorType.HIGHLIGHT)
+				.append(Integer.toString(world.getId()))
+				.append(ChatColorType.NORMAL)
+				.append("..")
+				.build();
+
+		chatMessageManager
+				.queue(QueuedMessage.builder()
+						.type(ChatMessageType.CONSOLE)
+						.runeLiteFormattedMessage(chatMessage)
+						.build());
+
+		if (client.getGameState() == GameState.LOGIN_SCREEN)
+		{
+			// on the login screen we can just change the world by ourselves
+			client.changeWorld(rsWorld);
+			return;
+		}
+
+		quickHopTargetWorld = rsWorld;
+	}
+
+	private void handleHop()
+	{
+		if (quickHopTargetWorld == null)
+		{
+			return;
+		}
+
+		if (client.getWidget(WidgetInfo.WORLD_SWITCHER_LIST) == null)
+		{
+			client.openWorldHopper();
+
+			if (++displaySwitcherAttempts >= DISPLAY_SWITCHER_MAX_ATTEMPTS)
+			{
+				String chatMessage = new ChatMessageBuilder()
+						.append(ChatColorType.NORMAL)
+						.append("Failed to quick-hop after ")
+						.append(ChatColorType.HIGHLIGHT)
+						.append(Integer.toString(displaySwitcherAttempts))
+						.append(ChatColorType.NORMAL)
+						.append(" attempts.")
+						.build();
+
+				chatMessageManager
+						.queue(QueuedMessage.builder()
+								.type(ChatMessageType.CONSOLE)
+								.runeLiteFormattedMessage(chatMessage)
+								.build());
+
+				resetQuickHopper();
+			}
+		}
+		else
+		{
+			client.hopToWorld(quickHopTargetWorld);
+			resetQuickHopper();
+		}
+	}
+
+	private void resetQuickHopper()
+	{
+		quickHopTargetWorld = null;
+		displaySwitcherAttempts = 0;
+	}
+
+	public void hitAPI()
+	{
+		if (canRefresh)
+		{
+			if ((client.getGameState() == GameState.LOGGED_IN || client.getGameState() == GameState.HOPPING) && wintertodtScouterPanel.isOpen())
+			{
+				canRefresh = false;
+				manager.makeGetRequest();
+				Timer t = new Timer();
+				t.schedule(new TimerTask()
+				{
+					@Override
+					public void run()
+					{
+						log.debug("Resetting canRefresh");
+						canRefresh = true;
+					}
+				}, 30 * 1000);
+			}
+		}
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (event.getType() != ChatMessageType.GAMEMESSAGE)
+		{
+			return;
+		}
+
+		if (event.getMessage().equals("Please finish what you're doing before using the World Switcher."))
+		{
+			resetQuickHopper();
+		}
 	}
 }

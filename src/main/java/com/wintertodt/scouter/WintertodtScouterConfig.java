@@ -1,9 +1,10 @@
-package com.nucleon.scouter;
+package com.wintertodt.scouter;
 
-import lombok.Getter;
+import com.wintertodt.scouter.ui.WintertodtScouterPanelType;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.ConfigSection;
 
 @ConfigGroup("wintertodtscouter")
 
@@ -32,5 +33,21 @@ public interface WintertodtScouterConfig extends Config
 	{
 
 		return "/* firebase https w/ authorization header */";
+	}
+
+	default WintertodtScouterPanelType wintertodtScouterPanelType()
+	{
+		return WintertodtScouterPanelType.CONDENSED;
+	}
+
+	@ConfigItem(
+			keyName = "worldHopperEnabled",
+			position = 2,
+			name = "Double click to Hop",
+			description = "Enables double clicking worlds in the side view panels to quick-hop to them"
+	)
+	default boolean isWorldHopperEnabled()
+	{
+		return true;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, nucleon
+ * Copyright (c) 2017, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,43 +22,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.nucleon.scouter;
+package com.wintertodt.scouter.ui.panels;
 
-import java.util.Date;
+import net.runelite.client.ui.PluginPanel;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import javax.swing.*;
+import java.awt.*;
 
-@Data
-public class WintertodtBossData
+class FixedWidthPanel extends JPanel
 {
-    @Getter
-    private final int world;
+	@Override
+	public Dimension getPreferredSize()
+	{
+		return new Dimension(PluginPanel.PANEL_WIDTH, super.getPreferredSize().height);
+	}
 
-    @Getter
-    private final int health;
-
-    @Getter
-    @Setter
-    private boolean uploaded;
-
-    @Getter
-    private long time;
-
-    @Getter
-    private int timer;
-
-    public WintertodtBossData(int health, int world, long time, boolean uploaded, int timer)
-    {
-        this.health = health;
-        this.world = world;
-        this.uploaded = uploaded;
-        this.time = time;
-        this.timer = timer;
-    }
-
-    public Date convertToDate() {
-        return new java.util.Date( time * 1000);
-    }
 }
