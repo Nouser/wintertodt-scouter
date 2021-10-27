@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019, Weird Gloop <admin@weirdgloop.org>
  * Copyright (c) 2021, Andrew McAdams
- * Copyright (c) 2021, wintertodt
+ * Copyright (c) 2021, nucleon
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -173,18 +173,21 @@ public class WintertodtScouterNetwork
                             plugin.setGlobalBossDataArrayList(parseData(j));
                             log.debug(j.toString());
                             plugin.setGetError(false);
-                            //plugin.updatePanelList();
+                            plugin.updatePanelList();
+                            response.close();
                         }
                         catch (IOException | JsonSyntaxException e)
                         {
                             plugin.setGetError(true);
                             log.error(e.getMessage());
+                            response.close();
                         }
                     }
                     else
                     {
                         log.error("Get request unsuccessful");
                         plugin.setGetError(true);
+                        response.close();;
                     }
                 }
             });

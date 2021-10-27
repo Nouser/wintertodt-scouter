@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, wintertodt
+ * Copyright (c) 2021, nucleon
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatColorType;
@@ -192,6 +193,12 @@ public class WintertodtScouterPlugin extends Plugin
 		}
 	}
 
+	@Subscribe
+	public void onGameTick(GameTick gameTick)
+	{
+		handleHop();
+	}
+
 	private boolean isInWintertodtRegion()
 	{
 		if (client.getLocalPlayer() != null)
@@ -205,9 +212,7 @@ public class WintertodtScouterPlugin extends Plugin
 	public void updatePanelList()
 	{
 		log.debug("Update panel list");
-		//SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList.stream().filter(this::isAllowedWorld).collect(Collectors.toList())));
-		SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(localBossDataArrayList));
-		//SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList.stream().filter(this::isAllowedWorld).collect(Collectors.toList())));
+		SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList));
 	}
 
 	@Schedule(
@@ -219,106 +224,110 @@ public class WintertodtScouterPlugin extends Plugin
 	// Encapsulate this in another version
 
 	public void captureBossHealth() {
-		// The Wintertodt Energy Bar packed ID
-		Widget wintertodtEnergyWidget = client.getWidget(WINTERTODT_HEALTH_PACKED_ID);
+		// There's no way to revalidate the widget text so during a world, it will contain the previous worlds data
+		if (client.getGameState() != GameState.HOPPING) {
+			// The Wintertodt Energy Bar packed ID
+			Widget wintertodtEnergyWidget = client.getWidget(WINTERTODT_HEALTH_PACKED_ID);
 
-		// Check if the player is in the Wintertodt boss fight region, also check if the widget is loaded
-		if (isInWintertodtRegion() && wintertodtEnergyWidget != null) {
+			// Check if the player is in the Wintertodt boss fight region, also check if the widget is loaded
+			if (isInWintertodtRegion() && wintertodtEnergyWidget != null) {
 
-			// Pull just the numbers from the Widget's text property ("Wintertodt Energy: 100%")
-			Pattern regex = Pattern.compile("\\d+");
-			Matcher bossEnergy = regex.matcher(wintertodtEnergyWidget.getText().toString());
+				// Pull just the numbers from the Widget's text property ("Wintertodt Energy: 100%")
+				Pattern regex = Pattern.compile("\\d+");
+				Matcher bossEnergy = regex.matcher(wintertodtEnergyWidget.getText().toString());
 
-			// Isolate the numbers
-			if (bossEnergy.find()) {
+				// Isolate the numbers
+				if (bossEnergy.find()) {
 
-				// get ready to add it to the arraylist for further network processing
-				int energy = Integer.parseInt(bossEnergy.group(0));
-				int world = client.getWorld();
-				long unixTime = Instant.now().getEpochSecond();
+					// get ready to add it to the arraylist for further network processing
+					int energy = Integer.parseInt(bossEnergy.group(0));
+					int world = client.getWorld();
+					long unixTime = Instant.now().getEpochSecond();
 
-				if (energy == 0) {
-					captureResetTimer();
-					return;
-				}
+					if (energy == 0) {
+						captureResetTimer();
+						return;
+					}
 
-				WintertodtBossData current = new WintertodtBossData(energy, world, unixTime, false, -1);
+					WintertodtBossData current = new WintertodtBossData(energy, world, unixTime, false, -1);
 
-				//check if the energy data is the same as the last upload; if so, skip this data.
-				if (localBossDataArrayList.size() > 1) {
+					//check if the energy data is the same as the last upload; if so, skip this data.
+					if (localBossDataArrayList.size() > 1) {
 
-					WintertodtBossData previous = localBossDataArrayList.get(0);
+						WintertodtBossData previous = localBossDataArrayList.get(0);
 
-					//if (previous.isUploaded()) {
+						//if (previous.isUploaded()) {
 						if (previous.getWorld() == current.getWorld()) {
 							if (previous.getHealth() == current.getHealth()) {
 								System.out.println("- Skipped Data, it's the same.");
 								return;
 							}
 						}
-					//}
-				}
+						//}
+					}
 
-				localBossDataArrayList.add(current);
-				localBossDataArrayList.sort(new WintertodtBossDataComparator());
-				Collections.reverse(localBossDataArrayList);
-			}
-			if (localBossDataArrayList.size() > 0)
-				System.out.println(localBossDataArrayList.get(0).getTime() + ": Health: " + localBossDataArrayList.get(0).getHealth());
+					localBossDataArrayList.add(current);
+					localBossDataArrayList.sort(new WintertodtBossDataComparator());
+					Collections.reverse(localBossDataArrayList);
+				}
+				if (localBossDataArrayList.size() > 0)
+					System.out.println(localBossDataArrayList.get(0).getTime() + ": Health: " + localBossDataArrayList.get(0).getHealth());
 				updatePanelList();
+			}
 		}
 	}
 
 	public void captureResetTimer() {
+		if (client.getGameState() != GameState.HOPPING) {
+			Widget wintertodtResetWidget = client.getWidget(WINTERTODT_GAME_TIMER_ID);
 
-		Widget wintertodtResetWidget = client.getWidget(WINTERTODT_GAME_TIMER_ID);
+			// Check if the player is in the Wintertodt boss fight region, also check if the widget is loaded
+			if (isInWintertodtRegion() && wintertodtResetWidget != null) {
 
-		// Check if the player is in the Wintertodt boss fight region, also check if the widget is loaded
-		if (isInWintertodtRegion() && wintertodtResetWidget != null) {
+				// Pull just the numbers from the Widget's text property ("Wintertodt Energy: 100%")
+				Pattern regex = Pattern.compile("\\d:\\d+");
+				Matcher bossTimer = regex.matcher(wintertodtResetWidget.getText());
 
-			// Pull just the numbers from the Widget's text property ("Wintertodt Energy: 100%")
-			Pattern regex = Pattern.compile("\\d:\\d+");
-			Matcher bossTimer = regex.matcher(wintertodtResetWidget.getText());
+				// Isolate the numbers
+				if (bossTimer.find()) {
 
-			// Isolate the numbers
-			if (bossTimer.find()) {
-
-				// get ready to add it to the arraylist for further network processing
-				String time = bossTimer.group(0);
-				String minute = time.split(":")[0];
-				String second = time.split(":")[1];
-				int seconds;
-				if (minute.equals("1")) {
-					seconds = 60 + Integer.parseInt(second);
-				} else {
-					seconds = Integer.parseInt(second);
-				}
-				int timer = seconds;
-				int world = client.getWorld();
-				long unixTime = Instant.now().getEpochSecond();
-
-				WintertodtBossData current = new WintertodtBossData(-1, world, unixTime, false, timer);
-
-				//check if the energy data is the same as the last upload; if so, skip this data.
-				if (localBossDataArrayList.size() > 1) {
-
-					WintertodtBossData previous = localBossDataArrayList.get(0);
-
-					//if (previous.isUploaded()) {
-					if (previous.getWorld() == current.getWorld()) {
-						if (previous.getTimer() == current.getTimer()) {
-							System.out.println("- Skipped Data, it's the same.");
-							return;
-						}
+					// get ready to add it to the arraylist for further network processing
+					String time = bossTimer.group(0);
+					String minute = time.split(":")[0];
+					String second = time.split(":")[1];
+					int seconds;
+					if (minute.equals("1")) {
+						seconds = 60 + Integer.parseInt(second);
+					} else {
+						seconds = Integer.parseInt(second);
 					}
-					//}
+					int timer = seconds;
+					int world = client.getWorld();
+					long unixTime = Instant.now().getEpochSecond();
+
+					WintertodtBossData current = new WintertodtBossData(-1, world, unixTime, false, timer);
+
+					//check if the energy data is the same as the last upload; if so, skip this data.
+					if (localBossDataArrayList.size() > 1) {
+
+						WintertodtBossData previous = localBossDataArrayList.get(0);
+
+						//if (previous.isUploaded()) {
+						if (previous.getWorld() == current.getWorld()) {
+							if (previous.getTimer() == current.getTimer()) {
+								System.out.println("- Skipped Data, it's the same.");
+								return;
+							}
+						}
+						//}
+					}
+					localBossDataArrayList.add(current);
+					localBossDataArrayList.sort(new WintertodtBossDataComparator());
+					Collections.reverse(localBossDataArrayList);
 				}
-				localBossDataArrayList.add(current);
-				localBossDataArrayList.sort(new WintertodtBossDataComparator());
-				Collections.reverse(localBossDataArrayList);
+				if (localBossDataArrayList.size() > 0)
+					System.out.println(localBossDataArrayList.get(0).getTime() + ": Timer: " + localBossDataArrayList.get(0).getTimer());
 			}
-			if (localBossDataArrayList.size() > 0)
-				System.out.println(localBossDataArrayList.get(0).getTime()+ ": Timer: " + localBossDataArrayList.get(0).getTimer());
 		}
 	}
 
@@ -498,6 +507,7 @@ public class WintertodtScouterPlugin extends Plugin
 	{
 		if (canRefresh)
 		{
+
 			if ((client.getGameState() == GameState.LOGGED_IN || client.getGameState() == GameState.HOPPING) && wintertodtScouterPanel.isOpen())
 			{
 				canRefresh = false;

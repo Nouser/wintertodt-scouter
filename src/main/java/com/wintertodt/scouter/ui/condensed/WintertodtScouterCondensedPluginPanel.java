@@ -62,10 +62,7 @@ import net.runelite.client.game.WorldService;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.task.Schedule;
-import net.runelite.client.ui.ClientToolbar;
-import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.DynamicGridLayout;
-import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.*;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.WorldUtil;
@@ -108,22 +105,49 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 
 		setBorder(null);
 		setLayout(new DynamicGridLayout(0, 1));
-
+		JPanel title = title();
+		JPanel tip = tip();
 		JPanel headerContainer = buildHeader();
-
+		JPanel p =new JPanel();
 		listContainer.setLayout(new GridLayout(0, 1));
 
+		add(title);
 		add(headerContainer);
 		add(listContainer);
+		add(tip);
 	}
 
 	/**
 	 * Builds the entire table header.
 	 */
+
+	private JPanel title()
+	{
+		JLabel title = new JLabel("Wintertodt Scouter");
+		title.setFont(FontManager.getRunescapeBoldFont());
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setLayout(new GridBagLayout());
+		panel.add(title);
+
+		return panel;
+	}
+
+	private JPanel tip()
+	{
+		JPanel layout = new JPanel(new BorderLayout());
+		JLabel tip = new JLabel("You can double click to hop worlds!");
+
+		tip.setFont(FontManager.getRunescapeSmallFont());
+		layout.add(tip);
+		layout.setBorder(BorderFactory.createTitledBorder(BorderFactory.createRaisedBevelBorder(), "Tip"));
+
+		return layout;
+	}
+
 	private JPanel buildHeader()
 	{
 		JPanel header = new JPanel(new BorderLayout());
-		JPanel leftSide = new JPanel(new BorderLayout());
+		JPanel status = new JPanel(new BorderLayout());
 
 		healthHeader = new WintertodtScouterPanelHeader("Health", orderIndex == WintertodtScouterOrder.HEALTH, ascendingOrder);
 		healthHeader.setPreferredSize(new Dimension(WORLD_COLUMN_WIDTH, 50));
@@ -173,11 +197,11 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 			}
 		});
 
-		leftSide.add(worldHeader, BorderLayout.WEST);
-		leftSide.add(healthHeader, BorderLayout.CENTER);
-		leftSide.add(timerHeader, BorderLayout.EAST);
+		status.add(worldHeader, BorderLayout.WEST);
+		status.add(healthHeader, BorderLayout.CENTER);
+		status.add(timerHeader, BorderLayout.EAST);
 
-		header.add(leftSide, BorderLayout.CENTER);
+		header.add(status, BorderLayout.CENTER);
 
 		return header;
 	}
@@ -279,15 +303,6 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 	private void setColorOnRow(WintertodtScouterTableRow row, boolean stripe)
 	{
 		Color c = stripe ? ODD_ROW : ColorScheme.DARK_GRAY_COLOR;
-		if (row.getHealth() < 60 && row.getHealth() != 0)
-		{
-			c = new Color(
-				c.getRed(),
-				c.getGreen() / 2,
-				c.getBlue() / 2,
-				c.getAlpha()
-			);
-		}
 
 		row.setBackground(c);
 	}

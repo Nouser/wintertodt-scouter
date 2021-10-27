@@ -21,7 +21,7 @@ public interface WintertodtScouterConfig extends Config
 			)
 	default String wintertodtGetDownlinkConfig()
 	{
-		return "/* firebase https w/ authorization header */";
+		return "https://www.wintertodt.com/scouter/";
 	}
 
 	@ConfigItem(keyName = NETWORK_DOWNLINK,
@@ -32,7 +32,7 @@ public interface WintertodtScouterConfig extends Config
 	default String wintertodtGetUplinkConfig()
 	{
 
-		return "/* firebase https w/ authorization header */";
+		return "https://www.wintertodt.com/scouter/";
 	}
 
 	default WintertodtScouterPanelType wintertodtScouterPanelType()

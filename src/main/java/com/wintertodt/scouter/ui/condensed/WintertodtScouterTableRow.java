@@ -28,10 +28,8 @@ package com.wintertodt.scouter.ui.condensed;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.http.api.worlds.World;
-import net.runelite.http.api.worlds.WorldType;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -48,15 +46,11 @@ public class WintertodtScouterTableRow extends JPanel
 	private static final int TIME_COLUMN_WIDTH = 55;
 
 	private static final Color CURRENT_WORLD = new Color(66, 227, 17);
-	private static final Color MEMBERS_WORLD = new Color(210, 193, 53);
-	private static final Color FREE_WORLD = new Color(200, 200, 200);
-
-
-	private static final Color COLOR_NEGATIVE = new Color(255, 80, 80);
 
 	private JLabel worldField;
 	private JLabel healthField;
 	private JLabel timerField;
+	private JProgressBar healthBar;
 
 	@Getter
 	private final World world;
@@ -162,9 +156,9 @@ public class WintertodtScouterTableRow extends JPanel
 			}
 		});
 
-		JPanel leftSide = new JPanel(new BorderLayout());
+		JPanel status = new JPanel(new BorderLayout());
 		JPanel rightSide = new JPanel(new BorderLayout());
-		leftSide.setOpaque(false);
+		status.setOpaque(false);
 		rightSide.setOpaque(false);
 
 		JPanel worldField = buildWorldField();
@@ -181,28 +175,30 @@ public class WintertodtScouterTableRow extends JPanel
 
 		updateStatus(current);
 
-		leftSide.add(worldField, BorderLayout.WEST);
-		leftSide.add(healthField, BorderLayout.CENTER);
-		leftSide.add(timerField, BorderLayout.EAST);
+		status.add(worldField, BorderLayout.WEST);
+		status.add(healthField, BorderLayout.CENTER);
+		status.add(timerField, BorderLayout.EAST);
 
-		add(leftSide, BorderLayout.CENTER);
+		add(status, BorderLayout.CENTER);
 
 	}
 
 	void updateStatus(boolean current)
 	{
-		healthField.setText(""+ getHealth() + "%");
+		healthBar.setStringPainted(true);
+		healthBar.setValue(getHealth());
+		healthBar.setString(getHealth() + "%");
+		healthBar.setForeground(Color.green);
 		timerField.setText(""+ getTimer());
 
-		if (getHealth() < 60)
+		if (getHealth() <= 60)
 		{
-			healthField.setForeground(COLOR_NEGATIVE);
-			timerField.setForeground(Color.WHITE);
+			healthBar.setForeground(Color.orange);
 		}
-		else
+
+		if (getHealth() <= 50)
 		{
-			healthField.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
-			timerField.setForeground(Color.WHITE);
+			healthBar.setForeground(Color.red);
 		}
 
 		recolour(current);
@@ -263,8 +259,6 @@ public class WintertodtScouterTableRow extends JPanel
 			worldField.setForeground(CURRENT_WORLD);
 			return;
 		}
-
-		worldField.setForeground(world.getTypes().contains(WorldType.MEMBERS) ? MEMBERS_WORLD : FREE_WORLD);
 	}
 
 	private JPanel buildWorldField()
@@ -273,7 +267,7 @@ public class WintertodtScouterTableRow extends JPanel
 		column.setBorder(new EmptyBorder(0, 5, 0, 5));
 
 		worldField = new JLabel(world.getId() + "");
-		column.add(worldField, BorderLayout.WEST);
+		column.add(worldField, BorderLayout.CENTER);
 
 		return column;
 	}
@@ -283,22 +277,23 @@ public class WintertodtScouterTableRow extends JPanel
 		JPanel column = new JPanel(new BorderLayout());
 		column.setBorder(new EmptyBorder(0, 5, 0, 5));
 
-		healthField = new JLabel();
-		healthField.setFont(FontManager.getRunescapeSmallFont());
-		healthField.setHorizontalAlignment(SwingConstants.RIGHT);
-		column.add(healthField, BorderLayout.CENTER);
+		healthBar = new JProgressBar();
+		healthBar.setFont(FontManager.getRunescapeSmallFont());
+
+		column.add(healthBar, BorderLayout.CENTER);
 
 		return column;
 	}
 
+
 	private JPanel buildTimerField()
 	{
 		JPanel column = new JPanel(new BorderLayout());
-		column.setBorder(new EmptyBorder(0, 5, 0, 5));
+		column.setBorder(new EmptyBorder(0, 5, 0, 0));
 
 		timerField = new JLabel();
 		timerField.setFont(FontManager.getRunescapeSmallFont());
-		timerField.setHorizontalAlignment(SwingConstants.RIGHT);
+		timerField.setHorizontalAlignment(SwingConstants.CENTER);
 		column.add(timerField, BorderLayout.CENTER);
 
 		return column;

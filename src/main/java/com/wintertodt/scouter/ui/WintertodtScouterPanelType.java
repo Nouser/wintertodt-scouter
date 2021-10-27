@@ -34,7 +34,7 @@ import lombok.Getter;
 public enum WintertodtScouterPanelType
 {
 	LARGE_PANELS("Large Panels", WintertodtScouterPluginPanel.class.asSubclass(WintertodtScouterPluginPanelBase.class)),
-	CONDENSED("Condensed", WintertodtScouterCondensedPluginPanel.class.asSubclass(WintertodtScouterPluginPanelBase.class))
+	CONDENSED("Condensed", WintertodtScouterCondensedPluginPanel.class.asSubclass(WintertodtScouterCondensedPluginPanel.class))
 	;
 
 	private final String name;

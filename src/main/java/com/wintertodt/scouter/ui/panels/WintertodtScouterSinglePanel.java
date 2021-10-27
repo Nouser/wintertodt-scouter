@@ -42,12 +42,10 @@ public class WintertodtScouterSinglePanel extends JPanel
 	private static final Color INCOMING = Color.YELLOW;
 	private static final Color LANDED = Color.GREEN;
 
-	private JLabel nameLabel;
-	private JLabel world;
-	private JLabel time;
+	private final JLabel time;
 
 	@Getter
-	private WintertodtBossData bossData;
+	private final WintertodtBossData bossData;
 
 	private Color lastBackground;
 
@@ -63,8 +61,8 @@ public class WintertodtScouterSinglePanel extends JPanel
 		JPanel topPanel = new JPanel(new BorderLayout());
 		topPanel.setOpaque(false);
 
-		world = new JLabel("World " + bossData.getWorld());
-		nameLabel = new JLabel("<html>" + bossData.getHealth() + "</html>");
+		JLabel world = new JLabel("World " + bossData.getWorld());
+		JLabel nameLabel = new JLabel("<html>" + bossData.getHealth() + "</html>");
 		nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		nameLabel.setBorder(new EmptyBorder(0, 10, 0, 0));
 

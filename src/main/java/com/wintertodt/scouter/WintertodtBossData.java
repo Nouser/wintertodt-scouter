@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, wintertodt
+ * Copyright (c) 2021, nucleon
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

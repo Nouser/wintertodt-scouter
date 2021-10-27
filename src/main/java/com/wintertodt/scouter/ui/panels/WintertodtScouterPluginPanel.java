@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Andrew McAdams
+ * Copyright (c) 2021, Andrew McAdams, nucleon
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,7 @@ public class WintertodtScouterPluginPanel extends WintertodtScouterPluginPanelBa
 	FixedWidthPanel bossListPanel = new FixedWidthPanel();
 	ArrayList<WintertodtScouterSinglePanel> bossList = new ArrayList<>();
 
-	private JScrollPane scrollPane;
-	private GridBagConstraints c = new GridBagConstraints();
+	private final GridBagConstraints c = new GridBagConstraints();
 
 	public WintertodtScouterPluginPanel(WintertodtScouterPlugin plugin)
 	{
@@ -74,7 +73,7 @@ public class WintertodtScouterPluginPanel extends WintertodtScouterPluginPanelBa
 		c.gridx = 0;
 		c.anchor = GridBagConstraints.PAGE_START;
 
-		scrollPane = new JScrollPane(bossListPanel);
+		JScrollPane scrollPane = new JScrollPane(bossListPanel);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setBorder(new EmptyBorder(1, 0, 0, 0));
 		scrollPane.setBackground(ColorScheme.DARKER_GRAY_COLOR);
