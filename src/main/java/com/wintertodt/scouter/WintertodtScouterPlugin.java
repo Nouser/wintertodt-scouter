@@ -60,22 +60,17 @@ import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.WorldUtil;
 import net.runelite.http.api.worlds.World;
 import net.runelite.http.api.worlds.WorldResult;
-import net.runelite.http.api.worlds.WorldType;
-
 import java.awt.image.BufferedImage;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 @Slf4j
 @PluginDescriptor(
-		name = "Wintertodt-Scouter",
+		name = "Wintertodt Scouter",
 		description = "Crowdsources the health of the Wintertodt Boss in themed worlds",
 		tags= {"firemaking", "wintertodt", "status", "health"}
 )
@@ -89,7 +84,7 @@ public class WintertodtScouterPlugin extends Plugin
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
 
 	private static final int WINTERTODT_REGION = 6462;
-	private final int SECONDS_BETWEEN_UPLINK = 10;
+	private final int SECONDS_BETWEEN_UPLINK = 5;
 	private final int SECONDS_BETWEEN_DOWNLINK = 5;
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
 	private boolean canRefresh;
@@ -262,7 +257,7 @@ public class WintertodtScouterPlugin extends Plugin
 					localBossDataArrayList.add(current);
 				}
 				if (localBossDataArrayList.size() > 0)
-					System.out.println(    localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTime() +
+					log.debug(    localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTime() +
 							": Health: " + localBossDataArrayList.get(localBossDataArrayList.size() - 1).getHealth());
 				updatePanelList();
 			}
@@ -307,7 +302,7 @@ public class WintertodtScouterPlugin extends Plugin
 
 						if (previous.getWorld() == current.getWorld()) {
 							if (previous.getTimer() == current.getTimer()) {
-								System.out.println("- Skipped Data, it's the same.");
+								log.debug("- Skipped Data, it's the same.");
 								return;
 							}
 						}
@@ -316,7 +311,7 @@ public class WintertodtScouterPlugin extends Plugin
 					localBossDataArrayList.add(current);
 				}
 				if (localBossDataArrayList.size() > 0)
-					System.out.println(localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTime() + ": Timer: " + localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTimer());
+					log.debug(localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTime() + ": Timer: " + localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTimer());
 			}
 		}
 	}
@@ -491,8 +486,13 @@ public class WintertodtScouterPlugin extends Plugin
 	{
 		quickHopTargetWorld = null;
 		displaySwitcherAttempts = 0;
+		hitAPI();
 	}
-
+	@Schedule(
+			period = SECONDS_BETWEEN_PANEL_REFRESH,
+			unit = ChronoUnit.SECONDS,
+			asynchronous = false
+	)
 	public void hitAPI()
 	{
 		if (canRefresh)
@@ -500,18 +500,8 @@ public class WintertodtScouterPlugin extends Plugin
 
 			if ((client.getGameState() == GameState.LOGGED_IN || client.getGameState() == GameState.HOPPING) && wintertodtScouterPanel.isOpen())
 			{
-				canRefresh = false;
+				canRefresh = true;
 				manager.makeGetRequest();
-				Timer t = new Timer();
-				t.schedule(new TimerTask()
-				{
-					@Override
-					public void run()
-					{
-						log.debug("Resetting canRefresh");
-						canRefresh = true;
-					}
-				}, 30 * 1000);
 			}
 		}
 	}

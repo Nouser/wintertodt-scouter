@@ -117,13 +117,13 @@ public class WintertodtScouterNetwork
                     if (response.isSuccessful())
                     {
 
-                        System.out.println("Successfully sent wintertodt boss data");
+                        log.debug("Successfully sent wintertodt boss data");
                         plugin.setPostError(false);
                         response.close();
                     }
                     else
                     {
-                        System.out.println("Post request unsuccessful");
+                        log.debug("Post request unsuccessful");
                         plugin.setPostError(true);
                     }
                 }
