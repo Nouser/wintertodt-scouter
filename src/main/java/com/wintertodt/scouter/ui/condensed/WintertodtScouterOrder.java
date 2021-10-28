@@ -30,5 +30,4 @@ public enum WintertodtScouterOrder
 	WORLD,
 	HEALTH,
 	TIMER,
-	TIMERSTAMP,
 }

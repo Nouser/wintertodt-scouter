@@ -28,7 +28,6 @@ import com.wintertodt.scouter.WintertodtBossData;
 import lombok.Getter;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -39,16 +38,10 @@ import java.util.function.Consumer;
 public class WintertodtScouterSinglePanel extends JPanel
 {
 
-	private static final Color INCOMING = Color.YELLOW;
-	private static final Color LANDED = Color.GREEN;
-
 	private final JLabel time;
-
 	@Getter
 	private final WintertodtBossData bossData;
-
 	private Color lastBackground;
-
 	public WintertodtScouterSinglePanel(WintertodtBossData bossData, Consumer<Integer> onSelect)
 	{
 		super();
