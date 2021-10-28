@@ -89,7 +89,7 @@ public class WintertodtScouterPlugin extends Plugin
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
 
 	private static final int WINTERTODT_REGION = 6462;
-	private final int SECONDS_BETWEEN_UPLINK = 5;
+	private final int SECONDS_BETWEEN_UPLINK = 10;
 	private final int SECONDS_BETWEEN_DOWNLINK = 5;
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
 	private boolean canRefresh;
@@ -181,7 +181,6 @@ public class WintertodtScouterPlugin extends Plugin
 		{
 			case WintertodtScouterConfig.NETWORK_UPLINK:
 				wintertodtGetUplink = config.wintertodtGetUplinkConfig();
-				manager.makePostRequest(new ArrayList<Object>());
 				break;
 			case WintertodtScouterConfig.NETWORK_DOWNLINK:
 				wintertodtGetDownlink = config.wintertodtGetDownlinkConfig();
@@ -224,7 +223,7 @@ public class WintertodtScouterPlugin extends Plugin
 	// Encapsulate this in another version
 
 	public void captureBossHealth() {
-		// There's no way to revalidate the widget text so during a world, it will contain the previous worlds data
+		// after hopping the widget contains the previous worlds data
 		if (client.getGameState() != GameState.HOPPING) {
 			// The Wintertodt Energy Bar packed ID
 			Widget wintertodtEnergyWidget = client.getWidget(WINTERTODT_HEALTH_PACKED_ID);
@@ -253,25 +252,18 @@ public class WintertodtScouterPlugin extends Plugin
 
 					//check if the energy data is the same as the last upload; if so, skip this data.
 					if (localBossDataArrayList.size() > 1) {
-
-						WintertodtBossData previous = localBossDataArrayList.get(0);
-
-						//if (previous.isUploaded()) {
+						WintertodtBossData previous = localBossDataArrayList.get(localBossDataArrayList.size() - 1);
 						if (previous.getWorld() == current.getWorld()) {
 							if (previous.getHealth() == current.getHealth()) {
-								System.out.println("- Skipped Data, it's the same.");
 								return;
 							}
 						}
-						//}
 					}
-
 					localBossDataArrayList.add(current);
-					localBossDataArrayList.sort(new WintertodtBossDataComparator());
-					Collections.reverse(localBossDataArrayList);
 				}
 				if (localBossDataArrayList.size() > 0)
-					System.out.println(localBossDataArrayList.get(0).getTime() + ": Health: " + localBossDataArrayList.get(0).getHealth());
+					System.out.println(    localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTime() +
+							": Health: " + localBossDataArrayList.get(localBossDataArrayList.size() - 1).getHealth());
 				updatePanelList();
 			}
 		}
@@ -310,23 +302,21 @@ public class WintertodtScouterPlugin extends Plugin
 					//check if the energy data is the same as the last upload; if so, skip this data.
 					if (localBossDataArrayList.size() > 1) {
 
-						WintertodtBossData previous = localBossDataArrayList.get(0);
+						WintertodtBossData previous = localBossDataArrayList.get(localBossDataArrayList.size() - 1);
 
-						//if (previous.isUploaded()) {
+
 						if (previous.getWorld() == current.getWorld()) {
 							if (previous.getTimer() == current.getTimer()) {
 								System.out.println("- Skipped Data, it's the same.");
 								return;
 							}
 						}
-						//}
 					}
+
 					localBossDataArrayList.add(current);
-					localBossDataArrayList.sort(new WintertodtBossDataComparator());
-					Collections.reverse(localBossDataArrayList);
 				}
 				if (localBossDataArrayList.size() > 0)
-					System.out.println(localBossDataArrayList.get(0).getTime() + ": Timer: " + localBossDataArrayList.get(0).getTimer());
+					System.out.println(localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTime() + ": Timer: " + localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTimer());
 			}
 		}
 	}
@@ -469,7 +459,7 @@ public class WintertodtScouterPlugin extends Plugin
 		if (client.getWidget(WidgetInfo.WORLD_SWITCHER_LIST) == null)
 		{
 			client.openWorldHopper();
-
+			localBossDataArrayList.clear();
 			if (++displaySwitcherAttempts >= DISPLAY_SWITCHER_MAX_ATTEMPTS)
 			{
 				String chatMessage = new ChatMessageBuilder()
@@ -524,6 +514,45 @@ public class WintertodtScouterPlugin extends Plugin
 				}, 30 * 1000);
 			}
 		}
+	}
+	@Schedule(
+			period = SECONDS_BETWEEN_UPLINK,
+			unit = ChronoUnit.SECONDS,
+			asynchronous = true
+	)
+	public void submitToAPI()
+	{
+		if ((client.getGameState() == GameState.LOGGED_IN || client.getGameState() != GameState.HOPPING) && isInWintertodtRegion()) {
+			if (localBossDataArrayList.size() > 0) {
+				WintertodtBossData last = localBossDataArrayList.get(localBossDataArrayList.size() - 1);
+				if (!last.isUploaded()) {
+					manager.submitToAPI(processLocalData(localBossDataArrayList));
+				}
+			}
+		}
+
+	}
+
+	WintertodtBossData processLocalData(ArrayList<WintertodtBossData> localBossDataArrayList) {
+
+		WintertodtBossData last = localBossDataArrayList.get(localBossDataArrayList.size() - 1);
+		for (WintertodtBossData data : localBossDataArrayList) {
+			if (!data.isUploaded()) {
+				data.setUploaded(true);
+			}
+		}
+		return last;
+	}
+
+	@Schedule(
+			period = SECONDS_BETWEEN_DOWNLINK,
+			unit = ChronoUnit.SECONDS,
+			asynchronous = true
+	)
+	public void attemptGetRequest()
+	{
+		log.debug("Attempt get request");
+		hitAPI();
 	}
 
 	@Subscribe

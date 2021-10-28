@@ -60,27 +60,17 @@ public class WintertodtScouterNetwork
     @Inject
     private WintertodtScouterPlugin plugin;
 
-    private List<Object> data = new ArrayList<>();
 
-    public void storeEvent(Object event)
+    protected void submitToAPI(WintertodtBossData data)
     {
+        List<Object> temp = new ArrayList<>();
         synchronized (this)
         {
-            data.add(event);
-        }
-    }
-
-    protected void submitToAPI()
-    {
-        List<Object> temp;
-        synchronized (this)
-        {
-            if (data.isEmpty())
+            if (data == null)
             {
                 return;
             }
-            temp = data;
-            data = new ArrayList<>();
+            temp.add(data);
         }
         makePostRequest(temp);
     }
@@ -126,13 +116,14 @@ public class WintertodtScouterNetwork
                 {
                     if (response.isSuccessful())
                     {
-                        log.debug("Successfully sent wintertodt boss data");
+
+                        System.out.println("Successfully sent wintertodt boss data");
                         plugin.setPostError(false);
                         response.close();
                     }
                     else
                     {
-                        log.error("Post request unsuccessful");
+                        System.out.println("Post request unsuccessful");
                         plugin.setPostError(true);
                     }
                 }
