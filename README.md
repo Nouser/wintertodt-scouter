@@ -1,7 +1,7 @@
 ![](https://github.com/nucleon/wintertodt-scouter/blob/main/banner.png)
 # Wintertodt Scouter 
 
-Wintertodt Scouter is a crowdsourced world scouter that provides the Wintertodt Boss energy and reset timer on the 4 RuneScape themed worlds. 
+Wintertodt Scouter is a crowdsourced plugin that provides the Wintertodt Boss energy and reset timer on the 4 RuneScape themed worlds. 
 
 It's like using twitch, but better.
 
