@@ -25,10 +25,12 @@
  */
 package com.wintertodt.scouter.ui.condensed;
 
+import com.wintertodt.scouter.WintertodtScouterPlugin;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
 import net.runelite.client.ui.FontManager;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.http.api.worlds.World;
 
 import javax.swing.*;
@@ -36,6 +38,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Consumer;
@@ -47,10 +50,18 @@ public class WintertodtScouterTableRow extends JPanel
 
 	private static final Color CURRENT_WORLD = new Color(66, 227, 17);
 
+	final BufferedImage bar5 = ImageUtil.loadImageResource(WintertodtScouterPlugin.class, "/5.png");
+	final BufferedImage bar4 = ImageUtil.loadImageResource(WintertodtScouterPlugin.class, "/4.png");
+	final BufferedImage bar3 = ImageUtil.loadImageResource(WintertodtScouterPlugin.class, "/3.png");
+	final BufferedImage bar2 = ImageUtil.loadImageResource(WintertodtScouterPlugin.class, "/2.png");
+	final BufferedImage bar1 = ImageUtil.loadImageResource(WintertodtScouterPlugin.class, "/1.png");
+	final BufferedImage bar0 = ImageUtil.loadImageResource(WintertodtScouterPlugin.class, "/0.png");
+
 	private JLabel worldField;
 	private JLabel healthField;
 	private JLabel timerField;
 	private JProgressBar healthBar;
+	private JLabel latency;
 
 	@Getter
 	private final World world;
@@ -63,6 +74,9 @@ public class WintertodtScouterTableRow extends JPanel
 
 	@Getter
 	private int timer;
+
+	@Getter
+	private long time;
 
 	private Color lastBackground;
 
@@ -100,13 +114,13 @@ public class WintertodtScouterTableRow extends JPanel
 		}
 	};
 
-	WintertodtScouterTableRow(World world, int bossworld, boolean current, int health, int timer, Consumer<World> onSelect)
+	WintertodtScouterTableRow(World world, int bossworld, boolean current, int health, int timer, long time, Consumer<World> onSelect)
 	{
 		this.world = world;
 		this.bossworld = bossworld;
 		this.health = health;
 		this.timer = timer;
-
+		this.time = time;
 		setLayout(new BorderLayout());
 		setBorder(new EmptyBorder(2, 0, 2, 0));
 
@@ -264,10 +278,36 @@ public class WintertodtScouterTableRow extends JPanel
 	private JPanel buildWorldField()
 	{
 		JPanel column = new JPanel(new BorderLayout());
-		column.setBorder(new EmptyBorder(0, 5, 0, 5));
+		column.setBorder(new EmptyBorder(0, 2, 0, 0));
 
 		worldField = new JLabel(world.getId() + "");
-		column.add(worldField, BorderLayout.CENTER);
+		column.add(worldField, BorderLayout.WEST);
+		long now = Instant.now().getEpochSecond();
+		latency = new JLabel(new ImageIcon(bar0));
+		long difference = now - time;
+		latency.setIcon(new ImageIcon(bar5));
+		if (difference > 5) {
+			latency.setIcon(new ImageIcon(bar5));
+		}
+		if (difference > 10) {
+			latency.setIcon(new ImageIcon(bar4));
+		}
+		if (difference> 15) {
+			latency.setIcon(new ImageIcon(bar3));
+		}
+		if (difference > 20) {
+			latency.setIcon(new ImageIcon(bar2));
+		}
+		if (difference > 25) {
+			latency.setIcon(new ImageIcon(bar1));
+		}
+		if (difference > 30) {
+			latency.setIcon(new ImageIcon(bar0));
+		}
+		column.add(latency, BorderLayout.EAST);
+
+		latency.setBorder(new EmptyBorder(0,2,0,0));
+
 
 		return column;
 	}

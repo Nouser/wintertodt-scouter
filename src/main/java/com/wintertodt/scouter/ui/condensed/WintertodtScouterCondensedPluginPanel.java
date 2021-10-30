@@ -295,7 +295,7 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		WintertodtScouterTableRow row = new WintertodtScouterTableRow(world,
 			bossData.get(index).getWorld(), current,
 			bossData.get(index).getHealth(),
-			bossData.get(index).getTimer(), plugin::hopTo);
+			bossData.get(index).getTimer(), bossData.get(index).getTime(), plugin::hopTo);
 		setColorOnRow(row, stripe);
 		return row;
 	}

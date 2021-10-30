@@ -312,6 +312,7 @@ public class WintertodtScouterPlugin extends Plugin
 				}
 				if (localBossDataArrayList.size() > 0)
 					log.debug(localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTime() + ": Timer: " + localBossDataArrayList.get(localBossDataArrayList.size() - 1).getTimer());
+				updatePanelList();
 			}
 		}
 	}
@@ -515,6 +516,7 @@ public class WintertodtScouterPlugin extends Plugin
 		if ((client.getGameState() == GameState.LOGGED_IN || client.getGameState() != GameState.HOPPING) && isInWintertodtRegion()) {
 			if (localBossDataArrayList.size() > 0) {
 				WintertodtBossData last = localBossDataArrayList.get(localBossDataArrayList.size() - 1);
+				last.setTime(Instant.now().getEpochSecond());
 				if (!last.isUploaded()) {
 					manager.submitToAPI(processLocalData(localBossDataArrayList));
 				}

@@ -83,7 +83,7 @@ public class WintertodtScouterNetwork
             JsonObject jObj = jsonElement.getAsJsonObject();
             try
             {
-                WintertodtBossData globalBossData = new WintertodtBossData(jObj.get("health").getAsInt(), jObj.get("world").getAsInt(), -1, false, jObj.get("timer").getAsInt());
+                WintertodtBossData globalBossData = new WintertodtBossData(jObj.get("health").getAsInt(), jObj.get("world").getAsInt(), jObj.get("timestamp").getAsLong(), false, jObj.get("timer").getAsInt());
                 list.add(globalBossData);
             } catch (UnsupportedOperationException uos) {
                 log.error("Boss Data Json Error: " + uos.getLocalizedMessage());
