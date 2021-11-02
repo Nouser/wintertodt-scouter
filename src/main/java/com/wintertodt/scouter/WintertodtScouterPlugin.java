@@ -191,6 +191,7 @@ public class WintertodtScouterPlugin extends Plugin
 	public void onGameTick(GameTick gameTick)
 	{
 		handleHop();
+		captureBossHealth();
 	}
 
 	private boolean isInWintertodtRegion()
@@ -208,14 +209,6 @@ public class WintertodtScouterPlugin extends Plugin
 		log.debug("Update panel list");
 		SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList));
 	}
-
-	@Schedule(
-			period = SECONDS_BETWEEN_POLL_HEALTH,
-			unit = ChronoUnit.SECONDS,
-			asynchronous = false
-	)
-
-	// Encapsulate this in another version
 
 	public void captureBossHealth() {
 		// after hopping the widget contains the previous worlds data
@@ -489,11 +482,6 @@ public class WintertodtScouterPlugin extends Plugin
 		displaySwitcherAttempts = 0;
 		hitAPI();
 	}
-	@Schedule(
-			period = SECONDS_BETWEEN_PANEL_REFRESH,
-			unit = ChronoUnit.SECONDS,
-			asynchronous = false
-	)
 	public void hitAPI()
 	{
 		if (canRefresh)
