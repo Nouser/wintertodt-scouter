@@ -77,13 +77,14 @@ public class WintertodtScouterNetwork
 
     private ArrayList<WintertodtBossData> parseData(JsonArray j)
     {
+
         ArrayList<WintertodtBossData> list = new ArrayList<WintertodtBossData>();
         for (JsonElement jsonElement : j)
         {
             JsonObject jObj = jsonElement.getAsJsonObject();
             try
             {
-                WintertodtBossData globalBossData = new WintertodtBossData(jObj.get("health").getAsInt(), jObj.get("world").getAsInt(), jObj.get("timestamp").getAsLong(), false, jObj.get("timer").getAsInt());
+                WintertodtBossData globalBossData = new WintertodtBossData(jObj.get("a").getAsInt(), jObj.get("b").getAsInt(), jObj.get("c").getAsLong(), false, jObj.get("d").getAsInt());
                 list.add(globalBossData);
             } catch (UnsupportedOperationException uos) {
                 log.error("Boss Data Json Error: " + uos.getLocalizedMessage());
@@ -142,7 +143,7 @@ public class WintertodtScouterNetwork
         {
             Request r = new Request.Builder()
                     .url(plugin.getWintertodtGetDownlink())
-                    .addHeader("Authorization", "get")
+                    .addHeader("Authorization", plugin.apiVersion)
                     .build();
             okHttpClient.newCall(r).enqueue(new Callback()
             {
@@ -161,7 +162,11 @@ public class WintertodtScouterNetwork
                         try
                         {
                             JsonArray j = new Gson().fromJson(response.body().string(), JsonArray.class);
-                            plugin.setGlobalBossDataArrayList(parseData(j));
+                            try {
+                                plugin.setGlobalBossDataArrayList(parseData(j));
+                            } catch (NullPointerException e) {
+                                log.error("null data from downlink: "+e.getMessage());
+                            }
                             log.debug(j.toString());
                             plugin.setGetError(false);
                             plugin.updatePanelList();

@@ -80,6 +80,9 @@ public class WintertodtScouterPlugin extends Plugin
 	public ArrayList<WintertodtBossData> localBossDataArrayList = new ArrayList<>();
 
 	@Getter
+	String apiVersion = "2";
+
+	@Getter
 	@Setter
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
 
