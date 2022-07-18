@@ -26,6 +26,7 @@
 package com.wintertodt.scouter;
 
 import com.google.inject.Provides;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.*;
 
@@ -210,7 +211,7 @@ public class WintertodtScouterPlugin extends Plugin
 	public void updatePanelList()
 	{
 		log.debug("Update panel list");
-		SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList));
+		SwingUtilities.invokeLater(() -> wintertodtScouterPanel.populate(globalBossDataArrayList.stream().filter(this::isAllowedWorld).collect(Collectors.toList())));
 	}
 
 	public void captureBossHealth() {

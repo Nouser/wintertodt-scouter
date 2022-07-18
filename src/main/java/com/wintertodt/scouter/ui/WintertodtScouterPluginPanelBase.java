@@ -26,7 +26,7 @@ package com.wintertodt.scouter.ui;
 
 import com.wintertodt.scouter.WintertodtBossData;
 import com.wintertodt.scouter.WintertodtScouterPlugin;
-import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.PluginPanel;
@@ -50,7 +50,7 @@ public abstract class WintertodtScouterPluginPanelBase extends PluginPanel
 		this.plugin = plugin;
 	}
 
-	public abstract void populate(ArrayList<WintertodtBossData> bossData);
+	public abstract void populate(List<WintertodtBossData> bossData);
 	public abstract void updateList();
 
 	public void onActivate()

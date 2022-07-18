@@ -73,7 +73,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -275,7 +274,7 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 	}
 
 	@Override
-	public void populate(ArrayList<WintertodtBossData> globalBossData)
+	public void populate(List<WintertodtBossData> globalBossData)
 	{
 		rows.clear();
 
@@ -288,7 +287,7 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		updateList();
 	}
 
-	private WintertodtScouterTableRow buildRow(ArrayList<WintertodtBossData> bossData, boolean stripe, int index)
+	private WintertodtScouterTableRow buildRow(List<WintertodtBossData> bossData, boolean stripe, int index)
 	{
 		World world = plugin.getWorldService().getWorlds().findWorld(bossData.get(index).getWorld());
 		boolean current = plugin.getCurrentWorld() == bossData.get(index).getWorld();
