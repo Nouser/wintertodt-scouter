@@ -33,6 +33,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class WintertodtScouterPluginPanel extends WintertodtScouterPluginPanelBase
 {
@@ -90,7 +91,7 @@ public class WintertodtScouterPluginPanel extends WintertodtScouterPluginPanelBa
 	}
 
 	@Override
-	public void populate(ArrayList<WintertodtBossData> globalBossData)
+	public void populate(List<WintertodtBossData> globalBossData)
 	{
 		c.gridy = 0;
 		c.weighty = 0;
