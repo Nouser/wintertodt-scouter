@@ -161,7 +161,7 @@ public class WintertodtScouterNetwork
                     {
                         try
                         {
-                            JsonArray j = new Gson().fromJson(response.body().string(), JsonArray.class);
+                            JsonArray j = gson.fromJson(response.body().string(), JsonArray.class);
                             try {
                                 plugin.setGlobalBossDataArrayList(parseData(j));
                             } catch (NullPointerException e) {
