@@ -88,8 +88,8 @@ public class WintertodtScouterPlugin extends Plugin
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
 
 	private static final int WINTERTODT_REGION = 6462;
-	private final int SECONDS_BETWEEN_UPLINK = 5;
-	private final int SECONDS_BETWEEN_DOWNLINK = 5;
+	private final int SECONDS_BETWEEN_UPLINK = 2;
+	private final int SECONDS_BETWEEN_DOWNLINK = 2;
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
 	private boolean canRefresh;
 	private final int SECONDS_BETWEEN_POLL_HEALTH = 1;
