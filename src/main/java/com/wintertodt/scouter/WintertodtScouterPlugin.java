@@ -88,13 +88,13 @@ public class WintertodtScouterPlugin extends Plugin
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
 
 	private static final int WINTERTODT_REGION = 6462;
-	private final int SECONDS_BETWEEN_UPLINK = 2;
-	private final int SECONDS_BETWEEN_DOWNLINK = 2;
+	private final int SECONDS_BETWEEN_UPLINK = 1;
+	private final int SECONDS_BETWEEN_DOWNLINK = 1;
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
 	private boolean canRefresh;
 	private final int SECONDS_BETWEEN_POLL_HEALTH = 1;
-	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952277;
-	public static final int WINTERTODT_GAME_TIMER_ID = 25952259;
+	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952276;
+	public static final int WINTERTODT_GAME_TIMER_ID = 25952276;
 
 	static final String CONFIG_GROUP_KEY = "scouter";
 
