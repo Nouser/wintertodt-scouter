@@ -86,7 +86,7 @@ public class WintertodtScouterPlugin extends Plugin
 	@Getter
 	@Setter
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
-
+	private WintertodtScouterCondensedPluginPanel panel;
 	private static final int WINTERTODT_REGION = 6462;
 	private final int SECONDS_BETWEEN_UPLINK = 1;
 	private final int SECONDS_BETWEEN_DOWNLINK = 1;
@@ -329,21 +329,8 @@ public class WintertodtScouterPlugin extends Plugin
 			clientToolbar.removeNavigation(navButton);
 		}
 
-		Class<? extends WintertodtScouterPluginPanelBase> panelClass;
-
-		panelClass = WintertodtScouterCondensedPluginPanel.class;
-
-		try
-		{
-			wintertodtScouterPanel = panelClass.getDeclaredConstructor(this.getClass()).newInstance(this);
-		}
-		catch (Exception e)
-		{
-			log.error("Error loading panel class", e);
-			return;
-		}
-
-		navButton = NavigationButton.builder().tooltip("Wintertodt Scouter").icon(icon).priority(7).panel(wintertodtScouterPanel).build();
+		panel = new WintertodtScouterCondensedPluginPanel(this);
+		navButton = NavigationButton.builder().tooltip("Wintertodt Scouter").icon(icon).priority(7).panel(panel).build();
 		clientToolbar.addNavigation(navButton);
 	}
 
