@@ -329,8 +329,8 @@ public class WintertodtScouterPlugin extends Plugin
 			clientToolbar.removeNavigation(navButton);
 		}
 
-		panel = new WintertodtScouterCondensedPluginPanel(this);
-		navButton = NavigationButton.builder().tooltip("Wintertodt Scouter").icon(icon).priority(7).panel(panel).build();
+		wintertodtScouterPanel = new WintertodtScouterCondensedPluginPanel(this);
+		navButton = NavigationButton.builder().tooltip("Wintertodt Scouter").icon(icon).priority(7).panel(wintertodtScouterPanel).build();
 		clientToolbar.addNavigation(navButton);
 	}
 
