@@ -45,6 +45,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static okhttp3.CacheControl.FORCE_NETWORK;
+
 @Slf4j
 @Singleton
 public class WintertodtScouterNetwork
@@ -144,6 +146,7 @@ public class WintertodtScouterNetwork
             Request r = new Request.Builder()
                     .url(plugin.getWintertodtGetDownlink())
                     .addHeader("Authorization", plugin.apiVersion)
+                    .cacheControl(FORCE_NETWORK)
                     .build();
             okHttpClient.newCall(r).enqueue(new Callback()
             {
