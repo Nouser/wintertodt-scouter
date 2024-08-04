@@ -88,8 +88,8 @@ public class WintertodtScouterPlugin extends Plugin
 	public ArrayList<WintertodtBossData> globalBossDataArrayList = new ArrayList<>();
 	private WintertodtScouterCondensedPluginPanel panel;
 	private static final int WINTERTODT_REGION = 6462;
-	private final int SECONDS_BETWEEN_UPLINK = 1;
-	private final int SECONDS_BETWEEN_DOWNLINK = 1;
+	private final int SECONDS_BETWEEN_UPLINK = 2;
+	private final int SECONDS_BETWEEN_DOWNLINK = 2;
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
 	private boolean canRefresh;
 	private final int SECONDS_BETWEEN_POLL_HEALTH = 1;
@@ -251,6 +251,9 @@ public class WintertodtScouterPlugin extends Plugin
 							}
 						}
 					}
+					if (localBossDataArrayList.size() > 5) {
+						localBossDataArrayList.clear();
+					}
 					localBossDataArrayList.add(current);
 				}
 				if (localBossDataArrayList.size() > 0)
@@ -304,7 +307,9 @@ public class WintertodtScouterPlugin extends Plugin
 							}
 						}
 					}
-
+					if (localBossDataArrayList.size() > 5) {
+						localBossDataArrayList.clear();
+					}
 					localBossDataArrayList.add(current);
 				}
 				if (localBossDataArrayList.size() > 0)
