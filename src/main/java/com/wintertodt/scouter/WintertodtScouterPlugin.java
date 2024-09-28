@@ -251,6 +251,7 @@ public class WintertodtScouterPlugin extends Plugin
 							}
 						}
 					}
+					// Prevents infinitely growing list by capping at 5
 					if (localBossDataArrayList.size() > 5) {
 						localBossDataArrayList.clear();
 					}

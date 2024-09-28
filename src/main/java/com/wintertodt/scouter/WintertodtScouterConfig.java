@@ -4,7 +4,6 @@ import com.wintertodt.scouter.ui.WintertodtScouterPanelType;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigSection;
 
 @ConfigGroup("wintertodtscouter")
 
@@ -21,7 +20,7 @@ public interface WintertodtScouterConfig extends Config
 			)
 	default String wintertodtGetDownlinkConfig()
 	{
-		return "https://www.wintertodt.com/scouter/";
+		return "https://wintertodt-scouter.com/";
 	}
 
 	@ConfigItem(keyName = NETWORK_DOWNLINK,
@@ -32,7 +31,7 @@ public interface WintertodtScouterConfig extends Config
 	default String wintertodtGetUplinkConfig()
 	{
 
-		return "https://www.wintertodt.com/scouter/";
+		return "https://wintertodt-scouter.com/";
 	}
 
 	default WintertodtScouterPanelType wintertodtScouterPanelType()
