@@ -93,8 +93,8 @@ public class WintertodtScouterPlugin extends Plugin
 	private final int SECONDS_BETWEEN_PANEL_REFRESH = 5;
 	private boolean canRefresh;
 	private final int SECONDS_BETWEEN_POLL_HEALTH = 1;
-	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952276;
-	public static final int WINTERTODT_GAME_TIMER_ID = 25952276;
+	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952282;
+	public static final int WINTERTODT_GAME_TIMER_ID = 25952282;
 
 	static final String CONFIG_GROUP_KEY = "scouter";
 
