@@ -38,7 +38,6 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 public class WintertodtScouterOverlayPanel extends OverlayPanel
 {
     private final WintertodtScouterPlugin plugin;
-    private final String OLD_ENDPOINT = "https://wintertodt-scouter.com/";
 
     @Inject
     private WintertodtScouterOverlayPanel(WintertodtScouterPlugin plugin)
@@ -57,22 +56,12 @@ public class WintertodtScouterOverlayPanel extends OverlayPanel
 
         if (plugin.isPostError())
         {
-            LineComponent l;
-            if(plugin.getWintertodtGetUplink().equals(OLD_ENDPOINT)) {
-                l = LineComponent.builder().left("Wintertodt Scouter Error: You're using the old uplink. Please reset your plugin settings.").build();
-            } else {
-                l = LineComponent.builder().left("Wintertodt Scouter Error: Failed to upload data, check uplink in config.").build();
-            }
+            LineComponent l = LineComponent.builder().left("Wintertodt Scouter Error: Failed to upload data, check uplink in config.").build();
             panelComponent.getChildren().add(l);
         }
         if (plugin.isGetError())
         {
-            LineComponent l;
-            if(plugin.getWintertodtGetDownlink().equals(OLD_ENDPOINT)) {
-                l = LineComponent.builder().left("Wintertodt Scouter Error: You're using the old downlink. Please reset your plugin settings.").build();
-            } else {
-                l = LineComponent.builder().left("Wintertodt Scouter Error: Failed to download data, check downlink in config").build();
-            }
+            LineComponent l = LineComponent.builder().left("Wintertodt Scouter Error: Failed to download data, check downlink in config").build();
             panelComponent.getChildren().add(l);
         }
 
