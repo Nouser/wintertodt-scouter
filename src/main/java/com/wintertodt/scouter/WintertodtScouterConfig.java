@@ -9,8 +9,8 @@ import net.runelite.client.config.ConfigItem;
 
 public interface WintertodtScouterConfig extends Config
 {
-	String NETWORK_UPLINK = "get uplink";
-	String NETWORK_DOWNLINK = "get downlink";
+	String NETWORK_UPLINK = "wtUplink";
+	String NETWORK_DOWNLINK = "wtDownlink";
 
 	@ConfigItem
 			(

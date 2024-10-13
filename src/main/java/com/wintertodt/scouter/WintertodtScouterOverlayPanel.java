@@ -56,7 +56,7 @@ public class WintertodtScouterOverlayPanel extends OverlayPanel
 
         if (plugin.isPostError())
         {
-            LineComponent l = LineComponent.builder().left("Wintertodt Scouter Error: Failed to upload data, check uplink in config").build();
+            LineComponent l = LineComponent.builder().left("Wintertodt Scouter Error: Failed to upload data, check uplink in config.").build();
             panelComponent.getChildren().add(l);
         }
         if (plugin.isGetError())

@@ -96,7 +96,7 @@ public class WintertodtScouterPlugin extends Plugin
 	public static final int WINTERTODT_HEALTH_PACKED_ID = 25952282;
 	public static final int WINTERTODT_GAME_TIMER_ID = 25952282;
 
-	static final String CONFIG_GROUP_KEY = "scouter";
+	static final String CONFIG_GROUP_KEY = "wintertodtscouter";
 
 	@Inject
 	private ChatMessageManager chatMessageManager;
@@ -179,10 +179,10 @@ public class WintertodtScouterPlugin extends Plugin
 		switch (event.getKey())
 		{
 			case WintertodtScouterConfig.NETWORK_UPLINK:
-				wintertodtGetUplink = config.wintertodtGetUplinkConfig();
+				wintertodtGetUplink = event.getNewValue();
 				break;
 			case WintertodtScouterConfig.NETWORK_DOWNLINK:
-				wintertodtGetDownlink = config.wintertodtGetDownlinkConfig();
+				wintertodtGetDownlink = event.getNewValue();
 				manager.makeGetRequest();
 				break;
 			default:
