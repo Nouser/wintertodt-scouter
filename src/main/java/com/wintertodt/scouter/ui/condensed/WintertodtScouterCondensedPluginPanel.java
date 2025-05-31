@@ -276,14 +276,54 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 	@Override
 	public void populate(List<WintertodtBossData> globalBossData)
 	{
-		rows.clear();
+		int currentWorld = plugin.getCurrentWorld();
 
-		for (int i = 0; i < globalBossData.size(); i++)
+		// Sort the incoming data according to the current order and direction
+		Comparator<WintertodtBossData> comparator;
+		switch (orderIndex)
 		{
-			WintertodtBossData boss = globalBossData.get(i);
-			rows.add(buildRow(globalBossData, i % 2 == 0, i));
+			case HEALTH:
+				comparator = Comparator.comparing(WintertodtBossData::getHealth);
+				break;
+			case WORLD:
+				comparator = Comparator.comparing(WintertodtBossData::getWorld);
+				break;
+			case TIMER:
+				comparator = Comparator.comparing(WintertodtBossData::getTimer);
+				break;
+			default:
+				comparator = Comparator.comparing(WintertodtBossData::getWorld);
 		}
+		if (!ascendingOrder)
+		{
+			comparator = comparator.reversed();
+		}
+		List<WintertodtBossData> sortedBossData = new ArrayList<>(globalBossData);
+		sortedBossData.sort(comparator);
 
+		// Reuse rows if possible
+		int i = 0;
+		for (; i < sortedBossData.size(); i++)
+		{
+			WintertodtBossData boss = sortedBossData.get(i);
+			World world = plugin.getWorldService().getWorlds().findWorld(boss.getWorld());
+			boolean isCurrent = currentWorld == boss.getWorld();
+			if (i < rows.size()) {
+				// Update existing row
+				rows.get(i).updateInfo(boss.getHealth(), boss.getWorld(), boss.getTimer(), isCurrent);
+			} else {
+				// Add new row if needed
+				WintertodtScouterTableRow row = new WintertodtScouterTableRow(world,
+					boss.getWorld(), isCurrent,
+					boss.getHealth(), boss.getTimer(), boss.getTime(), plugin::hopTo);
+				setColorOnRow(row, i % 2 == 0);
+				rows.add(row);
+			}
+		}
+		// Remove extra rows if any
+		while (rows.size() > sortedBossData.size()) {
+			rows.remove(rows.size() - 1);
+		}
 		updateList();
 	}
 
