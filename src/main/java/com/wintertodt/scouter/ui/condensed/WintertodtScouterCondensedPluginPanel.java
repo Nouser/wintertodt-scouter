@@ -276,8 +276,6 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 	@Override
 	public void populate(List<WintertodtBossData> globalBossData)
 	{
-		int currentWorld = plugin.getCurrentWorld();
-
 		// Sort the incoming data according to the current order and direction
 		Comparator<WintertodtBossData> comparator;
 		switch (orderIndex)
@@ -302,8 +300,8 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		sortedBossData.sort(comparator);
 
 		// Reuse rows if possible
-		int i = 0;
-		for (; i < sortedBossData.size(); i++)
+		int currentWorld = plugin.getCurrentWorld();
+		for (int i = 0; i < sortedBossData.size(); i++)
 		{
 			WintertodtBossData boss = sortedBossData.get(i);
 			World world = plugin.getWorldService().getWorlds().findWorld(boss.getWorld());
