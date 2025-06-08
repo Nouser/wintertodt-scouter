@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import javax.swing.SwingUtilities;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +67,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.WorldUtil;
 import net.runelite.http.api.worlds.World;
+import net.runelite.http.api.worlds.WorldResult;
 
 
 import javax.swing.*;
@@ -299,12 +300,38 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		List<WintertodtBossData> sortedBossData = new ArrayList<>(globalBossData);
 		sortedBossData.sort(comparator);
 
+		// Get WorldResult once and null-check
+		WorldResult worldResult = plugin.getWorldService().getWorlds();
+		if (worldResult == null) {
+			listContainer.removeAll();
+			listContainer.setLayout(new BorderLayout());
+
+			JPanel loadingPanel = new JPanel(new GridBagLayout());
+			loadingPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			loadingPanel.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(24, 8, 24, 8),
+				BorderFactory.createLineBorder(ColorScheme.DARKER_GRAY_COLOR, 2)
+			));
+
+			JLabel loadingLabel = new JLabel("Loading world list...");
+			loadingLabel.setFont(FontManager.getRunescapeSmallFont());
+			loadingLabel.setForeground(ColorScheme.TEXT_COLOR);
+			loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			loadingLabel.setVerticalAlignment(SwingConstants.CENTER);
+
+			loadingPanel.add(loadingLabel);
+			listContainer.add(loadingPanel, BorderLayout.CENTER);
+			listContainer.revalidate();
+			listContainer.repaint();
+			return;
+		}
+
 		// Reuse rows if possible
 		int currentWorld = plugin.getCurrentWorld();
 		for (int i = 0; i < sortedBossData.size(); i++)
 		{
 			WintertodtBossData boss = sortedBossData.get(i);
-			World world = plugin.getWorldService().getWorlds().findWorld(boss.getWorld());
+			World world = worldResult.findWorld(boss.getWorld());
 			boolean isCurrent = currentWorld == boss.getWorld();
 			if (i < rows.size()) {
 				// Update existing row
