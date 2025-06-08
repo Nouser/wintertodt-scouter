@@ -99,6 +99,8 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 
 	private final ArrayList<WintertodtScouterTableRow> rows = new ArrayList<>();
 
+	private JPanel loadingPanelCache = null;
+
 	public WintertodtScouterCondensedPluginPanel(WintertodtScouterPlugin plugin)
 	{
 		super(plugin);
@@ -302,25 +304,30 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 
 		// Get WorldResult once and null-check
 		WorldResult worldResult = plugin.getWorldService().getWorlds();
+		// getWorlds() may return null if the world list has not yet been loaded by RuneLite.
+		// This can occur on slow network connections or immediately after client startup.
+		// In this case, we show a loading indicator until the world list becomes available.
 		if (worldResult == null) {
 			listContainer.removeAll();
 			listContainer.setLayout(new BorderLayout());
 
-			JPanel loadingPanel = new JPanel(new GridBagLayout());
-			loadingPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-			loadingPanel.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createEmptyBorder(24, 8, 24, 8),
-				BorderFactory.createLineBorder(ColorScheme.DARKER_GRAY_COLOR, 2)
-			));
+			if (loadingPanelCache == null) {
+				loadingPanelCache = new JPanel(new GridBagLayout());
+				loadingPanelCache.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+				loadingPanelCache.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(24, 8, 24, 8),
+					BorderFactory.createLineBorder(ColorScheme.DARKER_GRAY_COLOR, 2)
+				));
 
-			JLabel loadingLabel = new JLabel("Loading world list...");
-			loadingLabel.setFont(FontManager.getRunescapeSmallFont());
-			loadingLabel.setForeground(ColorScheme.TEXT_COLOR);
-			loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
-			loadingLabel.setVerticalAlignment(SwingConstants.CENTER);
+				JLabel loadingLabel = new JLabel("Loading world list...");
+				loadingLabel.setFont(FontManager.getRunescapeSmallFont());
+				loadingLabel.setForeground(ColorScheme.TEXT_COLOR);
+				loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+				loadingLabel.setVerticalAlignment(SwingConstants.CENTER);
 
-			loadingPanel.add(loadingLabel);
-			listContainer.add(loadingPanel, BorderLayout.CENTER);
+				loadingPanelCache.add(loadingLabel);
+			}
+			listContainer.add(loadingPanelCache, BorderLayout.CENTER);
 			listContainer.revalidate();
 			listContainer.repaint();
 			return;
