@@ -113,6 +113,22 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		JPanel p =new JPanel();
 		listContainer.setLayout(new GridLayout(0, 1));
 
+		// Initialize loading panel cache
+		loadingPanelCache = new JPanel(new GridBagLayout());
+		loadingPanelCache.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		loadingPanelCache.setBorder(BorderFactory.createCompoundBorder(
+			BorderFactory.createEmptyBorder(24, 8, 24, 8),
+			BorderFactory.createLineBorder(ColorScheme.DARKER_GRAY_COLOR, 2)
+		));
+
+		JLabel loadingLabel = new JLabel("Loading world list...");
+		loadingLabel.setFont(FontManager.getRunescapeSmallFont());
+		loadingLabel.setForeground(ColorScheme.TEXT_COLOR);
+		loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		loadingLabel.setVerticalAlignment(SwingConstants.CENTER);
+
+		loadingPanelCache.add(loadingLabel);
+
 		add(title);
 		add(headerContainer);
 		add(listContainer);
@@ -301,8 +317,6 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		}
 		List<WintertodtBossData> sortedBossData = new ArrayList<>(globalBossData);
 		sortedBossData.sort(comparator);
-
-		// Get WorldResult once and null-check
 		WorldResult worldResult = plugin.getWorldService().getWorlds();
 		// getWorlds() may return null if the world list has not yet been loaded by RuneLite.
 		// This can occur on slow network connections or immediately after client startup.
@@ -310,27 +324,15 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		if (worldResult == null) {
 			listContainer.removeAll();
 			listContainer.setLayout(new BorderLayout());
-
-			if (loadingPanelCache == null) {
-				loadingPanelCache = new JPanel(new GridBagLayout());
-				loadingPanelCache.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-				loadingPanelCache.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createEmptyBorder(24, 8, 24, 8),
-					BorderFactory.createLineBorder(ColorScheme.DARKER_GRAY_COLOR, 2)
-				));
-
-				JLabel loadingLabel = new JLabel("Loading world list...");
-				loadingLabel.setFont(FontManager.getRunescapeSmallFont());
-				loadingLabel.setForeground(ColorScheme.TEXT_COLOR);
-				loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				loadingLabel.setVerticalAlignment(SwingConstants.CENTER);
-
-				loadingPanelCache.add(loadingLabel);
-			}
 			listContainer.add(loadingPanelCache, BorderLayout.CENTER);
 			listContainer.revalidate();
 			listContainer.repaint();
 			return;
+		}
+		// Ensure we're back to GridLayout if we were previously showing loading panel
+		if (!(listContainer.getLayout() instanceof GridLayout)) {
+			listContainer.removeAll();
+			listContainer.setLayout(new GridLayout(0, 1));
 		}
 
 		// Reuse rows if possible
