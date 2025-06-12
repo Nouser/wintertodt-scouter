@@ -335,7 +335,6 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 			listContainer.setLayout(new GridLayout(0, 1));
 		}
 
-		// Reuse rows if possible
 		int currentWorld = plugin.getCurrentWorld();
 		for (int i = 0; i < sortedBossData.size(); i++)
 		{
@@ -343,10 +342,8 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 			World world = worldResult.findWorld(boss.getWorld());
 			boolean isCurrent = currentWorld == boss.getWorld();
 			if (i < rows.size()) {
-				// Update existing row
 				rows.get(i).updateInfo(boss.getHealth(), boss.getWorld(), boss.getTimer(), isCurrent);
 			} else {
-				// Add new row if needed
 				WintertodtScouterTableRow row = new WintertodtScouterTableRow(world,
 					boss.getWorld(), isCurrent,
 					boss.getHealth(), boss.getTimer(), boss.getTime(), plugin::hopTo);
@@ -354,7 +351,6 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 				rows.add(row);
 			}
 		}
-		// Remove extra rows if any
 		while (rows.size() > sortedBossData.size()) {
 			rows.remove(rows.size() - 1);
 		}
