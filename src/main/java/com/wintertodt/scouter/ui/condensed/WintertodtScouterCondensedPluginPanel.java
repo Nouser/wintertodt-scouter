@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import javax.swing.SwingUtilities;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +67,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.WorldUtil;
 import net.runelite.http.api.worlds.World;
+import net.runelite.http.api.worlds.WorldResult;
 
 
 import javax.swing.*;
@@ -98,6 +99,8 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 
 	private final ArrayList<WintertodtScouterTableRow> rows = new ArrayList<>();
 
+	private JPanel loadingPanelCache = null;
+
 	public WintertodtScouterCondensedPluginPanel(WintertodtScouterPlugin plugin)
 	{
 		super(plugin);
@@ -109,6 +112,22 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		JPanel headerContainer = buildHeader();
 		JPanel p =new JPanel();
 		listContainer.setLayout(new GridLayout(0, 1));
+
+		// Initialize loading panel cache
+		loadingPanelCache = new JPanel(new GridBagLayout());
+		loadingPanelCache.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		loadingPanelCache.setBorder(BorderFactory.createCompoundBorder(
+			BorderFactory.createEmptyBorder(24, 8, 24, 8),
+			BorderFactory.createLineBorder(ColorScheme.DARKER_GRAY_COLOR, 2)
+		));
+
+		JLabel loadingLabel = new JLabel("Loading world list...");
+		loadingLabel.setFont(FontManager.getRunescapeSmallFont());
+		loadingLabel.setForeground(ColorScheme.TEXT_COLOR);
+		loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		loadingLabel.setVerticalAlignment(SwingConstants.CENTER);
+
+		loadingPanelCache.add(loadingLabel);
 
 		add(title);
 		add(headerContainer);
@@ -298,19 +317,33 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 		}
 		List<WintertodtBossData> sortedBossData = new ArrayList<>(globalBossData);
 		sortedBossData.sort(comparator);
+		WorldResult worldResult = plugin.getWorldService().getWorlds();
+		// getWorlds() may return null if the world list has not yet been loaded by RuneLite.
+		// This can occur on slow network connections or immediately after client startup.
+		// In this case, we show a loading indicator until the world list becomes available.
+		if (worldResult == null) {
+			listContainer.removeAll();
+			listContainer.setLayout(new BorderLayout());
+			listContainer.add(loadingPanelCache, BorderLayout.CENTER);
+			listContainer.revalidate();
+			listContainer.repaint();
+			return;
+		}
+		// Ensure we're back to GridLayout if we were previously showing loading panel
+		if (!(listContainer.getLayout() instanceof GridLayout)) {
+			listContainer.removeAll();
+			listContainer.setLayout(new GridLayout(0, 1));
+		}
 
-		// Reuse rows if possible
 		int currentWorld = plugin.getCurrentWorld();
 		for (int i = 0; i < sortedBossData.size(); i++)
 		{
 			WintertodtBossData boss = sortedBossData.get(i);
-			World world = plugin.getWorldService().getWorlds().findWorld(boss.getWorld());
+			World world = worldResult.findWorld(boss.getWorld());
 			boolean isCurrent = currentWorld == boss.getWorld();
 			if (i < rows.size()) {
-				// Update existing row
 				rows.get(i).updateInfo(boss.getHealth(), boss.getWorld(), boss.getTimer(), isCurrent);
 			} else {
-				// Add new row if needed
 				WintertodtScouterTableRow row = new WintertodtScouterTableRow(world,
 					boss.getWorld(), isCurrent,
 					boss.getHealth(), boss.getTimer(), boss.getTime(), plugin::hopTo);
@@ -318,7 +351,6 @@ public class WintertodtScouterCondensedPluginPanel extends WintertodtScouterPlug
 				rows.add(row);
 			}
 		}
-		// Remove extra rows if any
 		while (rows.size() > sortedBossData.size()) {
 			rows.remove(rows.size() - 1);
 		}
