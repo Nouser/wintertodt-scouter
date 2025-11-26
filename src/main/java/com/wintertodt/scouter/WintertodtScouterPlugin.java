@@ -498,16 +498,17 @@ public class WintertodtScouterPlugin extends Plugin
 	)
 	public void submitToAPI()
 	{
-		if ((client.getGameState() == GameState.LOGGED_IN || client.getGameState() != GameState.HOPPING) && isInWintertodtRegion()) {
-			if (localBossDataArrayList.size() > 0) {
-				WintertodtBossData last = localBossDataArrayList.get(localBossDataArrayList.size() - 1);
-				last.setTime(Instant.now().getEpochSecond());
-				if (!last.isUploaded()) {
-					manager.submitToAPI(processLocalData(localBossDataArrayList));
+		clientThread.invoke(() -> {
+			if ((client.getGameState() == GameState.LOGGED_IN || client.getGameState() != GameState.HOPPING) && isInWintertodtRegion()) {
+				if (localBossDataArrayList.size() > 0) {
+					WintertodtBossData last = localBossDataArrayList.get(localBossDataArrayList.size() - 1);
+					last.setTime(Instant.now().getEpochSecond());
+					if (!last.isUploaded()) {
+						manager.submitToAPI(processLocalData(localBossDataArrayList));
+					}
 				}
 			}
-		}
-
+		});
 	}
 
 	WintertodtBossData processLocalData(ArrayList<WintertodtBossData> localBossDataArrayList) {
