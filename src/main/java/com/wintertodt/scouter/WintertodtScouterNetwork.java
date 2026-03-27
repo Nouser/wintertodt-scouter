@@ -33,6 +33,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -65,16 +66,11 @@ public class WintertodtScouterNetwork
 
     protected void submitToAPI(WintertodtBossData data)
     {
-        List<Object> temp = new ArrayList<>();
-        synchronized (this)
+        if (data == null)
         {
-            if (data == null)
-            {
-                return;
-            }
-            temp.add(data);
+            return;
         }
-        makePostRequest(temp);
+        makePostRequest(Collections.singletonList(data));
     }
 
     private ArrayList<WintertodtBossData> parseData(JsonArray j)
