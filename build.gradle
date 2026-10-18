@@ -26,9 +26,17 @@ dependencies {
 }
 
 group = 'com.wintertodt.scouter'
-version = '1.2.2'
-sourceCompatibility = '1.8'
+version = '1.2.3'
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
+	options.release.set(11)
+}
+
+tasks.register('run', JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.wintertodt.scouter.WintertodtScouterPluginTest'
+
+	jvmArgs "-ea"
+	args "--developer-mode", "--debug"
 }
